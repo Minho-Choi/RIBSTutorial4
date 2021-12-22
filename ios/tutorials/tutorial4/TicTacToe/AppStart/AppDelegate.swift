@@ -18,13 +18,17 @@ import RIBs
 import RxSwift
 import UIKit
 
+protocol UrlHandler: class {
+    func handle(_ url: URL)
+}
+
 /// Game app delegate.
 @UIApplicationMain
 public class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// The window.
     public var window: UIWindow?
-
+    private var urlHandler: UrlHandler?
     /// Tells the delegate that the launch process is almost done and the app is almost ready to run.
     ///
     /// - parameter application: Your singleton app object.
@@ -36,10 +40,17 @@ public class AppDelegate: UIResponder, UIApplicationDelegate {
         let window = UIWindow(frame: UIScreen.main.bounds)
         self.window = window
 
-        let launchRouter = RootBuilder(dependency: AppComponent()).build()
-        self.launchRouter = launchRouter
-        launchRouter.launch(from: window)
+        let result = RootBuilder(dependency: AppComponent()).build()
+        self.launchRouter = result.launchRouter
+        urlHandler = result.urlhandler
+        launchRouter?.launch(from: window)
 
+        return true
+    }
+    
+    // 앱으로 딥링크가 보내졌을때 트리거
+    public func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
+        urlHandler?.handle(url) // urlHandler는 root RIB가 되어야 함
         return true
     }
 

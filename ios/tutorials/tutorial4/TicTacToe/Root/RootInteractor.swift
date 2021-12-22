@@ -30,11 +30,13 @@ protocol RootListener: AnyObject {
     // TODO: Declare methods the interactor can invoke to communicate with other RIBs.
 }
 
-final class RootInteractor: PresentableInteractor<RootPresentable>, RootInteractable, RootPresentableListener {
+final class RootInteractor: PresentableInteractor<RootPresentable>, RootInteractable, RootPresentableListener, UrlHandler, RootActionableItem {
 
     weak var router: RootRouting?
 
     weak var listener: RootListener?
+    
+    private let loggedInActionableItemSubject = ReplaySubject<LoggedInActionableItem>.create(bufferSize: 1)
 
     // TODO: Add additional dependencies to constructor. Do not perform any logic
     // in constructor.
@@ -57,5 +59,20 @@ final class RootInteractor: PresentableInteractor<RootPresentable>, RootInteract
 
     func didLogin(withPlayer1Name player1Name: String, player2Name: String) {
         router?.routeToLoggedIn(withPlayer1Name: player1Name, player2Name: player2Name)
+    }
+    
+    func handle(_ url: URL) {
+        // workflow: RIB 앱 내에서 url을 다루는 메커니즘
+        let launchGameWorkFlow = LaunchGameWorkflow(url: url)
+        launchGameWorkFlow
+            .subscribe(self)
+            .disposeOnDeactivate(interactor: self)
+    }
+    
+    func waitForLogin() -> Observable<(LoggedInActionableItem, ())> {
+        return loggedInActionableItemSubject
+            .map { (loggedInItem: LoggedInActionableItem) -> (LoggedInActionableItem, ()) in
+                (loggedInItem, ())
+            }
     }
 }
