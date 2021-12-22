@@ -16,6 +16,7 @@
 
 import RIBs
 import RxSwift
+import Dispatch
 
 protocol LoggedInRouting: Routing {
     func cleanupViews()
@@ -68,4 +69,17 @@ final class LoggedInInteractor: Interactor, LoggedInInteractable {
 
     private var games = [Game]()
 
+}
+
+extension LoggedInInteractor: LoggedInActionableItem {
+    func launchGame(with id: String?) -> Observable<(LoggedInActionableItem, ())> {
+        let game: Game? = games.first { game in
+            return game.id.lowercased() == id?.lowercased()
+        }
+        
+        if let game = game {
+            router?.routeToGame(with: game.builder)
+        }
+        return Observable.just((self, ()))
+    }
 }

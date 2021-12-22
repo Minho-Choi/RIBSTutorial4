@@ -18,7 +18,7 @@ import RIBs
 import RxSwift
 
 protocol RootRouting: ViewableRouting {
-    func routeToLoggedIn(withPlayer1Name player1Name: String, player2Name: String)
+    func routeToLoggedIn(withPlayer1Name player1Name: String, player2Name: String) -> LoggedInActionableItem
 }
 
 protocol RootPresentable: Presentable {
@@ -58,7 +58,10 @@ final class RootInteractor: PresentableInteractor<RootPresentable>, RootInteract
     // MARK: - LoggedOutListener
 
     func didLogin(withPlayer1Name player1Name: String, player2Name: String) {
-        router?.routeToLoggedIn(withPlayer1Name: player1Name, player2Name: player2Name)
+        let loggedInActionableItem = router?.routeToLoggedIn(withPlayer1Name: player1Name, player2Name: player2Name)
+        if let loggedInActionableItem = loggedInActionableItem {
+            loggedInActionableItemSubject.onNext(loggedInActionableItem)
+        }
     }
     
     func handle(_ url: URL) {
